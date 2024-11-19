@@ -28,18 +28,22 @@ public class InteraccionNPC : MonoBehaviour
 
     private void Update()
     {
+
+
+
         // Verificar la distancia entre el jugador y el NPC
         float distancia = Vector2.Distance(transform.position, jugador.position);
 
         // Activar la interacción si está dentro de la distancia y no se ha realizado
         if (distancia <= distanciaInteraccion && !estaInteraccionando && !interaccionRealizada && !Input.GetKey(KeyCode.RightArrow))
         {
-            estaInteraccionando = true; // Inicia la interacción
-            interaccionRealizada = true; // Marca la interacción como realizada
-            movimientoJugador.DeshabilitarMovimiento(tiempoInteraccionNPC); // Deshabilita el movimiento del jugador por el tiempo de interacción
-            InteraccionObstaculo.IncrementarNPCContador(); // Incrementa el contador de NPCs de forma estática
-            tiempoInteraccion = 0f; // Reinicia el temporizador de interacción
-            animator.SetTrigger("IsInteracting"); // Activa la animación de interacción
+            estaInteraccionando = true;
+            interaccionRealizada = true;
+            movimientoJugador.DeshabilitarMovimiento(tiempoInteraccionNPC);
+            movimientoJugador.ActivarAnimacionInteraccionConNPC(); // Activar animación
+            InteraccionObstaculo.IncrementarNPCContador();
+            tiempoInteraccion = 0f;
+            animator.SetBool("IsInteracting", true); // Activar animación de interacción
         }
 
         // Si está en interacción, rota el NPC y controla el tiempo
@@ -48,15 +52,17 @@ public class InteraccionNPC : MonoBehaviour
             RotarNPC();
             tiempoInteraccion += Time.deltaTime; // Aumenta el tiempo de interacción
 
-            // Termina la interacción después de 3 segundos
+            // Termina la interacción después del tiempo definido
             if (tiempoInteraccion >= tiempoInteraccionNPC)
             {
-                estaInteraccionando = false; // Termina la interacción
-                movimientoJugador.EstablecerInteraccion(false); // Permite que el jugador se mueva de nuevo
-                seguirDetrasDelJugador = true; // Activa el seguimiento detrás del jugador
-                RestablecerRotacion(); // Restablece la rotación inicial del NPC
-                PosicionInstantaneaDetrasDelJugador(); // Coloca instantáneamente al NPC detrás del jugador
-                animator.SetTrigger("IsFollowing"); // Activa la animación de seguir
+                estaInteraccionando = false;
+                movimientoJugador.EstablecerInteraccion(false);
+                movimientoJugador.DesactivarAnimacionesInteraccion(); // Desactivar animación
+                seguirDetrasDelJugador = true;
+                RestablecerRotacion();
+                PosicionInstantaneaDetrasDelJugador();
+                animator.SetBool("IsInteracting", false); // Desactivar animación de interacción
+                animator.SetBool("IsFollowing", true); // Activar animación de seguimiento
             }
         }
 
@@ -64,6 +70,16 @@ public class InteraccionNPC : MonoBehaviour
         if (seguirDetrasDelJugador)
         {
             PosicionInstantaneaDetrasDelJugador();
+            if (movimientoJugador.EstaEnMovimiento())
+            {
+                animator.SetBool("IsFollowing", true);
+                animator.SetBool("IsIdle", false);
+            }
+            else // Activar "IsIdle" si el jugador está detenido
+            {
+                animator.SetBool("IsFollowing", false);
+                animator.SetBool("IsIdle", true);
+            }
         }
 
         // Resetear el estado de la interacción cuando el jugador se aleje
@@ -72,7 +88,8 @@ public class InteraccionNPC : MonoBehaviour
             interaccionRealizada = false; // Permitir que la interacción ocurra de nuevo
             if (!estaInteraccionando && !seguirDetrasDelJugador)
             {
-                animator.SetTrigger("IsIdle"); // Activa la animación de detenerse si no está interactuando ni siguiendo
+                animator.SetBool("IsFollowing", false); // Desactivar animación de seguimiento
+                animator.SetBool("IsIdle", true); // Activar animación de inactividad
             }
         }
     }

@@ -50,14 +50,27 @@ public class InteraccionObstaculo : MonoBehaviour
         enInteraccion = true;
         tiempoInteraccion = 0f;
 
-        float penalizacionActual = (contadorNPCs < minNPCs) ? duracionPenalizacionExtra : duracionPenalizacion;
-        movimientoJugador.DeshabilitarMovimiento(penalizacionActual);
+        // Verificar si cumple con el requisito mínimo de NPCs
+        if (contadorNPCs >= minNPCs)
+        {
+            movimientoJugador.ActivarAnimacionObstaculoConNPCs(); // Animación de interacción exitosa
+            movimientoJugador.DeshabilitarMovimiento(duracionPenalizacion);
+        }
+        else
+        {
+            movimientoJugador.ActivarAnimacionObstaculoSinNPCs(); // Animación de interacción fallida
+            movimientoJugador.DeshabilitarMovimiento(duracionPenalizacionExtra);
+        }
+
+        // Reproducir sonido
         audioSource.pitch = 1.0f;
         if (!audioSource.isPlaying)
         {
             audioSource.Play();
         }
     }
+
+
 
     private void ControlarInteraccion()
     {
@@ -74,13 +87,16 @@ public class InteraccionObstaculo : MonoBehaviour
     {
         enInteraccion = false;
         movimientoJugador.EstablecerInteraccion(false);
+        movimientoJugador.DesactivarAnimacionesObstaculo(); // Desactivar ambas animaciones
         transform.rotation = Quaternion.Euler(0, 0, anguloInicial);
-        Destroy(gameObject); // Eliminar el obstáculo después de la interacción
+        Destroy(gameObject);
         if (audioSource.isPlaying)
         {
             audioSource.Stop();
         }
     }
+
+
 
     private void TambalearObstaculo()
     {

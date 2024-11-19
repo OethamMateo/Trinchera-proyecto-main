@@ -18,6 +18,11 @@ public class MovimientoJugador : MonoBehaviour
     private AudioSource audioSource;
     private Animator animator;
 
+    private static bool interactuandoConNPC = false;
+    private static bool interactuandoConObjeto = false;
+
+
+
     void Start()
     {
         velocidadActual = velocidad;
@@ -110,4 +115,43 @@ public class MovimientoJugador : MonoBehaviour
             DeshabilitarMovimiento(tiempoInmovilizacion);
         }
     }
+    public void ActivarAnimacionInteraccionConNPC()
+    {
+        animator.SetBool("InteractuandoConNPC", true);
+        interactuandoConNPC = true;
+    }
+
+    public void ActivarAnimacionInteraccionConObjeto()
+    {
+        animator.SetBool("InteractuandoConObjeto", true);
+        interactuandoConObjeto = true;
+    }
+
+    public void DesactivarAnimacionesInteraccion()
+    {
+        animator.SetBool("InteractuandoConNPC", false);
+        animator.SetBool("InteractuandoConObjeto", false);
+        interactuandoConNPC = false;
+        interactuandoConObjeto = false;
+    }
+    public void ActivarAnimacionObstaculoConNPCs()
+    {
+        animator.SetBool("InteraccionObstaculoConNPCs", true);
+    }
+
+    public void ActivarAnimacionObstaculoSinNPCs()
+    {
+        animator.SetBool("InteraccionObstaculoSinNPCs", true);
+    }
+
+    public void DesactivarAnimacionesObstaculo()
+    {
+        animator.SetBool("InteraccionObstaculoConNPCs", false);
+        animator.SetBool("InteraccionObstaculoSinNPCs", false);
+    }
+    public bool EstaEnMovimiento()
+    {
+        return Mathf.Abs(Input.GetAxis("Horizontal")) > 0.1f || Mathf.Abs(Input.GetAxis("Vertical")) > 0.1f;
+    }
+
 }
