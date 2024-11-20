@@ -6,9 +6,9 @@ public class InteraccionNPC : MonoBehaviour
 {
     public Transform jugador; // Referencia al transform del jugador
     public float distanciaInteraccion = 1.5f; // Distancia de interacción para activar
-    public float velocidadRotacion = 100f; // Velocidad de rotación durante la interacción
     public float distanciaDetrasX = -1f; // Distancia fija detrás del jugador en el eje X
     public float tiempoInteraccionNPC = 3f; // Tiempo de interacción del NPC
+
     private bool estaInteraccionando = false; // Controla el estado de interacción
     private bool seguirDetrasDelJugador = false; // Controla si el NPC debe estar detrás del jugador
     private bool interaccionRealizada = false; // Controla si la interacción ya se realizó
@@ -28,13 +28,10 @@ public class InteraccionNPC : MonoBehaviour
 
     private void Update()
     {
-
-
-
         // Verificar la distancia entre el jugador y el NPC
         float distancia = Vector2.Distance(transform.position, jugador.position);
 
-        // Activar la interacción si está dentro de la distancia y no se ha realizado
+        // Activar la interacción si está dentro de la distancia, no se ha realizado y el jugador no se está moviendo hacia adelante
         if (distancia <= distanciaInteraccion && !estaInteraccionando && !interaccionRealizada && !Input.GetKey(KeyCode.RightArrow))
         {
             estaInteraccionando = true;
@@ -46,10 +43,11 @@ public class InteraccionNPC : MonoBehaviour
             animator.SetBool("IsInteracting", true); // Activar animación de interacción
         }
 
-        // Si está en interacción, rota el NPC y controla el tiempo
         if (estaInteraccionando)
         {
-            RotarNPC();
+            // Detener el movimiento del NPC durante la interacción
+            seguirDetrasDelJugador = false;
+
             tiempoInteraccion += Time.deltaTime; // Aumenta el tiempo de interacción
 
             // Termina la interacción después del tiempo definido
@@ -59,7 +57,6 @@ public class InteraccionNPC : MonoBehaviour
                 movimientoJugador.EstablecerInteraccion(false);
                 movimientoJugador.DesactivarAnimacionesInteraccion(); // Desactivar animación
                 seguirDetrasDelJugador = true;
-                RestablecerRotacion();
                 PosicionInstantaneaDetrasDelJugador();
                 animator.SetBool("IsInteracting", false); // Desactivar animación de interacción
                 animator.SetBool("IsFollowing", true); // Activar animación de seguimiento
@@ -67,7 +64,7 @@ public class InteraccionNPC : MonoBehaviour
         }
 
         // Si el estado de seguimiento está activado, el NPC sigue detrás del jugador
-        if (seguirDetrasDelJugador)
+        if (seguirDetrasDelJugador && !estaInteraccionando)
         {
             PosicionInstantaneaDetrasDelJugador();
             if (movimientoJugador.EstaEnMovimiento())
@@ -92,21 +89,6 @@ public class InteraccionNPC : MonoBehaviour
                 animator.SetBool("IsIdle", true); // Activar animación de inactividad
             }
         }
-    }
-
-    private void RotarNPC()
-    {
-        // Rota el NPC hacia la derecha mientras la interacción está activa
-        if (estaInteraccionando)
-        {
-            transform.Rotate(Vector3.forward, velocidadRotacion * Time.deltaTime);
-        }
-    }
-
-    private void RestablecerRotacion()
-    {
-        // Restablece la rotación inicial del NPC
-        transform.rotation = Quaternion.Euler(0, 0, 0);
     }
 
     private void PosicionInstantaneaDetrasDelJugador()
